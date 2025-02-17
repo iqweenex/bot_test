@@ -8,7 +8,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 logging.basicConfig(level=logging.INFO)
 
-API_TOKEN = '7771358337:AAF_6deTgmKK50Be7IG5L7jg2XXqYLpFWhc'
+API_TOKEN = '' #input your bot token here
 
 DB_NAME = 'quiz_bot.db'
 
