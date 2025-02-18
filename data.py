@@ -1,5 +1,5 @@
-import json
-DICT_DATA = 'data/quiz_data.json'
+#import json
+#DICT_DATA = 'data/quiz_data.json'
 quiz_data = [
     {
         'question': 'Для чего в Python используется встроенная функция enumerate()?',

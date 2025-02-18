@@ -6,21 +6,23 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters.command import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
+import data
+
 logging.basicConfig(level=logging.INFO)
 
 API_TOKEN = '' #input your bot token here
 
 DB_NAME = 'quiz_bot.db'
 
-DICT_DATA = 'data/quiz_data.json'
-
+#DICT_DATA = 'data/quiz_data.json'
+quiz_data = data.quiz_data
 
 bot = Bot(token=API_TOKEN)
 
 dp = Dispatcher()
 
-with open(DICT_DATA, 'r') as j:
-    quiz_data = json.loads(j.read())
+#with open(DICT_DATA, 'r') as j:
+    #quiz_data = json.loads(j.read())
 
 def generate_options_keyboard(answer_options, right_answer):
     builder = InlineKeyboardBuilder()
@@ -55,14 +57,14 @@ async def right_answer(callback: types.CallbackQuery):
     if current_question_index <len(quiz_data):
         await(get_question(callback.message, callback.from_user.id))
     else:
-        await callback.message.answer((f"Это был последний вопрос. Квиз завершен!\nВаш результат: {current_score} правильных ответов"))
+        await callback.message.answer((f"Это был последний вопрос. Квиз завершен!\nВаш результат: {current_score} правильных ответов из {len(quiz_data)} возможных"))
 
 
 @dp.callback_query(F.data=='wrong_answer')
 async def wrong_answer(callback: types.CallbackQuery):
     await callback.bot.edit_message_reply_markup(
         chat_id=callback.from_user.id,
-        message_id=callback.from_user.id,
+        message_id=callback.message.message_id,
         reply_markup=None
     )
 
@@ -70,7 +72,7 @@ async def wrong_answer(callback: types.CallbackQuery):
     current_score = await get_user_score(callback.from_user.id)
     correct_option = quiz_data[current_question_index]['correct_option']
 
-    await callback.message.answer(f"Неверно.\nВерный ответ {quiz_data[current_question_index]['options'][correct_option]}")
+    await callback.message.answer(f"Неверно.\nВерный ответ: {quiz_data[current_question_index]['options'][correct_option]}")
 
     current_question_index+=1
     await update_quiz_index(callback.from_user.id, current_question_index)
@@ -79,7 +81,7 @@ async def wrong_answer(callback: types.CallbackQuery):
     if current_question_index < len(quiz_data):
         await get_question(callback.message, callback.from_user.id)
     else:
-        await callback.message.answer(f"Это был последний вопрос. Квиз завершен\nВаш счет: {current_score}")
+        await callback.message.answer(f"Это был последний вопрос. Квиз завершен\nВаш результат: {current_score} правильных ответов из {len(quiz_data)} возможных")
 
 
 #Хэндлер на команду /start
@@ -151,8 +153,8 @@ async def cmd_quiz(message: types.Message):
 
 async def create_table():
     async with aiosqlite.connect(DB_NAME) as db:
-        await db.execute('''CREATE TABLE IF NOT EXISTS quiz_state (user_id INTEGER PRIMARY KEY, question_index INTEGER''')
-        await db.execute('''CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, score INTEGER''')
+        await db.execute('''CREATE TABLE IF NOT EXISTS quiz_state (user_id INTEGER PRIMARY KEY, question_index INTEGER)''')
+        await db.execute('''CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, score INTEGER)''')
         await db.commit()
 
 
